@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Supply Management Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .supply-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .supply-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .supply-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            border-color: #3498db;
+        }
+
+        .supply-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .supply-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .supply-stock {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .supply-prices {
+            font-size: 12px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .discounted-price {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .supply-controls {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        .customer-queue {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .customer {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .customer:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .customer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .customer-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .patience-bar {
+            width: 100px;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .patience-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .patience-high { background: #27ae60; }
+        .patience-medium { background: #f39c12; }
+        .patience-low { background: #e74c3c; }
+
+        .customer-demand {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .customer-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .controls-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-label {
+            margin-left: 10px;
+            vertical-align: super;
+            font-weight: bold;
+        }
+
+        .low-stock {
+            background: linear-gradient(135deg, #ffe6e6, #ffcccc) !important;
+            border-color: #e74c3c !important;
+        }
+
+        .out-of-stock {
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0) !important;
+            border-color: #95a5a6 !important;
+            opacity: 0.6;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success { background: #27ae60; }
+        .notification.warning { background: #f39c12; }
+        .notification.error { background: #e74c3c; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="header">🖥️ Laptop Supply Management Game</h1>
+        
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="money">$1000</div>
+                <div class="stat-label">Cash</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="customers-served">0</div>
+                <div class="stat-label">Customers Served</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-profit">$0</div>
+                <div class="stat-label">Total Profit</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="day">1</div>
+                <div class="stat-label">Day</div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="section">
+                <h2 class="section-title">🛒 Supply Management</h2>
+                
+                <div class="controls-section">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-recharge">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Auto-Recharge</span>
+
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-serve">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Auto-Serve</span>
+
+                    <button class="btn btn-warning" onclick="game.resetGame()" style="margin-left: 20px;">
+                        🔄 Reset Game
+                    </button>
+                </div>
+
+                <div class="supply-grid" id="supply-grid">
+                    <!-- Supply items will be generated here -->
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">👥 Customer Queue</h2>
+                <div class="customer-queue" id="customer-queue">
+                    <!-- Customers will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SupplyGame {
+            constructor() {
+                // Load saved data or use defaults
+                this.loadGameData();
+                
+                this.customers = [];
+                this.customerNames = ['Naveen', 'Srimanth', 'Krishna', 'Harsha', 'Ramya', 'Tanishqa', 'Vasavi', 'Keshab', 'Divya','Srinivas', 'Lakshmi', 'Ravi', 'Anjali', 'Pranav', 'Siddharth', 'Vikram', 'Aishwarya', 'Karthik', 'Pooja', 'Nikhil'];
+                
+                this.init();
+            }
+
+            // Cookie management methods
+            setCookie(name, value, days = 30) {
+                const expires = new Date();
+                expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=/`;
+            }
+
+            getCookie(name) {
+                const nameEQ = name + "=";
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) === 0) {
+                        try {
+                            return JSON.parse(c.substring(nameEQ.length, c.length));
+                        } catch (e) {
+                            return null;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            saveGameData() {
+                const gameData = {
+                    money: this.money,
+                    customersServed: this.customersServed,
+                    totalProfit: this.totalProfit,
+                    day: this.day,
+                    autoRecharge: this.autoRecharge,
+                    autoServe: this.autoServe,
+                    supplies: this.supplies,
+                    lastSaved: Date.now()
+                };
+                this.setCookie('laptopSupplyGame', gameData);
+            }
+
+            loadGameData() {
+                const savedData = this.getCookie('laptopSupplyGame');
+                
+                if (savedData) {
+                    this.money = savedData.money || 1000;
+                    this.customersServed = savedData.customersServed || 0;
+                    this.totalProfit = savedData.totalProfit || 0;
+                    this.day = savedData.day || 1;
+                    this.autoRecharge = savedData.autoRecharge || false;
+                    this.autoServe = savedData.autoServe || false;
+                    this.supplies = savedData.supplies || this.getDefaultSupplies();
+                    
+                    this.showNotification('Game progress loaded!', 'success');
+                } else {
+                    // Set default values for new game
+                    this.money = 1000;
+                    this.customersServed = 0;
+                    this.totalProfit = 0;
+                    this.day = 1;
+                    this.autoRecharge = false;
+                    this.autoServe = false;
+                    this.supplies = this.getDefaultSupplies();
+                    
+                    this.showNotification('Welcome to the Laptop Supply Game!', 'success');
+                }
+            }
+
+            getDefaultSupplies() {
+                return {
+                    mouse: { name: 'Mouse', icon: '🖱️', stock: 10, basePrice: 25, sellPrice: 45 },
+                    keyboard: { name: 'Keyboard', icon: '⌨️', stock: 8, basePrice: 50, sellPrice: 90 },
+                    monitor: { name: 'Monitor', icon: '🖥️', stock: 5, basePrice: 200, sellPrice: 350 },
+                    ram: { name: 'RAM', icon: '🧠', stock: 15, basePrice: 80, sellPrice: 140 },
+                    ssd: { name: 'SSD', icon: '💾', stock: 12, basePrice: 120, sellPrice: 200 },
+                    webcam: { name: 'Webcam', icon: '📹', stock: 6, basePrice: 60, sellPrice: 110 }
+                };
+            }
+
+            resetGame() {
+                if (confirm('Are you sure you want to reset your game progress? This cannot be undone!')) {
+                    // Clear cookie
+                    document.cookie = 'laptopSupplyGame=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    
+                    // Reset all values
+                    this.money = 1000;
+                    this.customersServed = 0;
+                    this.totalProfit = 0;
+                    this.day = 1;
+                    this.autoRecharge = false;
+                    this.autoServe = false;
+                    this.supplies = this.getDefaultSupplies();
+                    this.customers = [];
+                    
+                    // Update UI
+                    this.renderSupplies();
+                    this.renderCustomers();
+                    this.updateStats();
+                    this.updateToggles();
+                    
+                    this.showNotification('Game reset successfully!', 'success');
+                }
+            }
+
+            init() {
+                this.renderSupplies();
+                this.updateStats();
+                this.updateToggles();
+                this.setupEventListeners();
+                this.startGameLoop();
+                this.spawnCustomer();
+                
+                // Auto-save every 30 seconds
+                setInterval(() => {
+                    this.saveGameData();
+                }, 30000);
+            }
+
+            updateToggles() {
+                document.getElementById('auto-recharge').checked = this.autoRecharge;
+                document.getElementById('auto-serve').checked = this.autoServe;
+            }
+
+            setupEventListeners() {
+                document.getElementById('auto-recharge').addEventListener('change', (e) => {
+                    this.autoRecharge = e.target.checked;
+                    this.showNotification(this.autoRecharge ? 'Auto-Recharge Enabled' : 'Auto-Recharge Disabled', 'success');
+                    this.saveGameData(); // Save settings
+                });
+
+                document.getElementById('auto-serve').addEventListener('change', (e) => {
+                    this.autoServe = e.target.checked;
+                    this.showNotification(this.autoServe ? 'Auto-Serve Enabled' : 'Auto-Serve Disabled', 'success');
+                    this.saveGameData(); // Save settings
+                });
+            }
+
+            renderSupplies() {
+                const grid = document.getElementById('supply-grid');
+                grid.innerHTML = '';
+
+                Object.entries(this.supplies).forEach(([key, supply]) => {
+                    const discountedPrice = Math.round(supply.basePrice * 0.95);
+                    const stockClass = supply.stock === 0 ? 'out-of-stock' : supply.stock <= 3 ? 'low-stock' : '';
+                    
+                    const supplyDiv = document.createElement('div');
+                    supplyDiv.className = `supply-item ${stockClass}`;
+                    supplyDiv.innerHTML = `
+                        <div class="supply-icon">${supply.icon}</div>
+                        <div class="supply-name">${supply.name}</div>
+                        <div class="supply-stock">Stock: ${supply.stock}</div>
+                        <div class="supply-prices">
+                            <span class="original-price">$${supply.basePrice}</span>
+                            <span class="discounted-price">$${discountedPrice}</span>
+                        </div>
+                        <div class="supply-controls">
+                            <button class="btn btn-primary" onclick="game.buySupply('${key}', 1)">Buy 1</button>
+                            <button class="btn btn-primary" onclick="game.buySupply('${key}', 5)">Buy 5</button>
+                        </div>
+                    `;
+                    grid.appendChild(supplyDiv);
+                });
+            }
+
+            buySupply(supplyKey, quantity) {
+                const supply = this.supplies[supplyKey];
+                const discountedPrice = Math.round(supply.basePrice * 0.95);
+                const totalCost = discountedPrice * quantity;
+
+                if (this.money >= totalCost) {
+                    this.money -= totalCost;
+                    supply.stock += quantity;
+                    this.showNotification(`Bought ${quantity} ${supply.name}(s) for ${totalCost}`, 'success');
+                    this.renderSupplies();
+                    this.updateStats();
+                    this.saveGameData(); // Save after purchase
+                } else {
+                    this.showNotification('Not enough money!', 'error');
+                }
+            }
+
+            spawnCustomer() {
+                const supplyKeys = Object.keys(this.supplies);
+                const demandedSupply = supplyKeys[Math.floor(Math.random() * supplyKeys.length)];
+                const quantity = Math.floor(Math.random() * 3) + 1;
+                const patience = Math.floor(Math.random() * 30) + 20; // 20-50 seconds
+                
+                const customer = {
+                    id: Date.now(),
+                    name: this.customerNames[Math.floor(Math.random() * this.customerNames.length)],
+                    demandedSupply,
+                    quantity,
+                    patience,
+                    maxPatience: patience
+                };
+
+                this.customers.push(customer);
+                this.renderCustomers();
+                
+                // Randomly spawn next customer
+                setTimeout(() => this.spawnCustomer(), Math.random() * 10000 + 5000);
+            }
+
+            renderCustomers() {
+                const queue = document.getElementById('customer-queue');
+                queue.innerHTML = '';
+
+                this.customers.forEach(customer => {
+                    const supply = this.supplies[customer.demandedSupply];
+                    const patiencePercent = (customer.patience / customer.maxPatience) * 100;
+                    const patienceClass = patiencePercent > 60 ? 'patience-high' : 
+                                         patiencePercent > 30 ? 'patience-medium' : 'patience-low';
+                    
+                    const customerDiv = document.createElement('div');
+                    customerDiv.className = 'customer';
+                    customerDiv.innerHTML = `
+                        <div class="customer-info">
+                            <span class="customer-name">${customer.name}</span>
+                            <div class="patience-bar">
+                                <div class="patience-fill ${patienceClass}" style="width: ${patiencePercent}%"></div>
+                            </div>
+                        </div>
+                        <div class="customer-demand">
+                            Wants: ${customer.quantity} ${supply.name}(s) ${supply.icon}
+                            <br>Will pay: $${supply.sellPrice * customer.quantity}
+                        </div>
+                        <div class="customer-actions">
+                            <button class="btn btn-success" onclick="game.serveCustomer(${customer.id})" 
+                                    ${supply.stock < customer.quantity ? 'disabled' : ''}>
+                                Serve
+                            </button>
+                            <button class="btn btn-warning" onclick="game.dismissCustomer(${customer.id})">
+                                Dismiss
+                            </button>
+                        </div>
+                    `;
+                    queue.appendChild(customerDiv);
+                });
+            }
+
+            serveCustomer(customerId) {
+                const customerIndex = this.customers.findIndex(c => c.id === customerId);
+                if (customerIndex === -1) return;
+
+                const customer = this.customers[customerIndex];
+                const supply = this.supplies[customer.demandedSupply];
+
+                if (supply.stock >= customer.quantity) {
+                    supply.stock -= customer.quantity;
+                    const profit = supply.sellPrice * customer.quantity;
+                    this.money += profit;
+                    this.totalProfit += profit;
+                    this.customersServed++;
+                    
+                    this.customers.splice(customerIndex, 1);
+                    this.showNotification(`Served ${customer.name} for ${profit} profit!`, 'success');
+                    
+                    this.renderSupplies();
+                    this.renderCustomers();
+                    this.updateStats();
+                    this.saveGameData(); // Save after serving customer
+                } else {
+                    this.showNotification('Not enough stock!', 'error');
+                }
+            }
+
+            dismissCustomer(customerId) {
+                const customerIndex = this.customers.findIndex(c => c.id === customerId);
+                if (customerIndex !== -1) {
+                    const customer = this.customers[customerIndex];
+                    this.customers.splice(customerIndex, 1);
+                    this.showNotification(`Dismissed ${customer.name}`, 'warning');
+                    this.renderCustomers();
+                }
+            }
+
+            startGameLoop() {
+                setInterval(() => {
+                    // Update customer patience
+                    this.customers.forEach((customer, index) => {
+                        customer.patience--;
+                        if (customer.patience <= 0) {
+                            this.customers.splice(index, 1);
+                            this.showNotification(`${customer.name} left impatiently!`, 'error');
+                        }
+                    });
+
+                    // Auto-serve logic
+                    if (this.autoServe) {
+                        this.customers.forEach(customer => {
+                            const supply = this.supplies[customer.demandedSupply];
+                            if (supply.stock >= customer.quantity) {
+                                this.serveCustomer(customer.id);
+                            }
+                        });
+                    }
+
+                    // Auto-recharge logic
+                    if (this.autoRecharge) {
+                        Object.entries(this.supplies).forEach(([key, supply]) => {
+                            if (supply.stock <= 3) {
+                                const discountedPrice = Math.round(supply.basePrice * 0.95);
+                                const buyQuantity = 10;
+                                const totalCost = discountedPrice * buyQuantity;
+                                
+                                if (this.money >= totalCost) {
+                                    this.money -= totalCost;
+                                    supply.stock += buyQuantity;
+                                    this.showNotification(`Auto-bought ${buyQuantity} ${supply.name}(s)`, 'success');
+                                }
+                            }
+                        });
+                    }
+
+                    this.renderCustomers();
+                    this.renderSupplies();
+                    this.updateStats();
+                }, 1000);
+
+                // Day progression
+                setInterval(() => {
+                    this.day++;
+                    this.showNotification(`Day ${this.day} begins!`, 'success');
+                    this.updateStats();
+                }, 60000); // New day every minute
+            }
+
+            updateStats() {
+                document.getElementById('money').textContent = `$${this.money}`;
+                document.getElementById('customers-served').textContent = this.customersServed;
+                document.getElementById('total-profit').textContent = `$${this.totalProfit}`;
+                document.getElementById('day').textContent = this.day;
+            }
+
+            showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        }
+
+        // Start the game
+        const game = new SupplyGame();
+    </script>
+</body>
+</html>
